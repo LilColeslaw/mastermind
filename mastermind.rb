@@ -1,12 +1,8 @@
 # frozen-string-literal: false
 
-# store code as an array of numbers in strings
-# when people enter a code have them enter 1234 for example and then use .split("")
-# right number right spot if guess[x] == code[x]
-# right number wrong spot if code.includes(x) -- start with no multiple same numbers
+# class used to run the whole game - Game.new starts a new game
 class Game
   def initialize
-    @guesses = 0
     generate_code
     play
   end
@@ -19,11 +15,60 @@ class Game
               "to bypass it, but it is impossible. You will have to guess. From what you can see\n"\
               "in the code database for the wallet, it seems that the code has no repeats, and\n"\
               "the program will tell you whether or not each digit in your guess is included in the code,\n"\
-              "and if it is, whether or not it is in the right spot. A small line of red text below\n"\
-              'the area you enter the code in spells out a message - YOU HAVE 3 TRIES LEFT - . Good luck.'
+              "and if it is, whether or not it is in the right spot (\'r\' means right spot and digit and \'d\' means"\
+              " only right digit). A small line of red text below\nthe area you enter the code in spells out a message "\
+              "- YOU HAVE 3 TRIES LEFT - \nGood luck...\n"
     type_out(message)
-    3.times { guess }
-    win ? win_message : lose_message
+    3.times { |time| guess(time) }
+    @win ? win_message : lose_message
+  end
+
+  def guess(time)
+    type_out("What is your guess?\n")
+    guess = gets.chomp.split('')
+    if guess.length == 4 && guess == guess.uniq && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
+      result(guess)
+      type_out("You have #{3 - (time + 1)} guesses remaining.\n") unless @win
+    else
+      invalid
+      guess(time)
+    end
+  end
+
+  def result(guess)
+    result = ''
+    @win = true
+    guess.each_with_index do |digit, index|
+      if @code[index] == digit
+        result << 'r'
+      elsif @code.include?(digit)
+        result << 'd'
+        @win = false
+      else
+        result << 'X'
+        @win = false
+      end
+    end
+    puts result
+  end
+
+  def win_message
+    type_out("You guessed the correct code! You gain access to the account and send the money to your own\n"\
+             "fiat account. There, you send it to a swap and exchange it for 1/2 monero 1/2 bitcoin.\n"\
+             'You are rich! But more hacking will come. You are not done yet...')
+  end
+
+  def lose_message
+    type_out("You failed to guess the code. The correct code was #{@code} (the wallet printed "\
+              'a message telling you the correct code and that the code has been changed and the new '\
+              "code will appear on the owner of the wallet\'s device). The wallet has shut down "\
+              "and alerted government authorities of your ip address, which you thought it couldn\'t access."\
+              'You might want to pack your things...')
+  end
+
+  def invalid
+    puts "That's not a valid code. Remember, the code has no repeats, includes only the numbers"\
+         '1-6, and is 4 digits long...'
   end
 
   def type_out(message)
@@ -43,7 +88,7 @@ class Game
   end
 
   def add_num
-    num = (rand * 7).to_i.to_s
+    num = (rand * 6 + 1).to_i.to_s
     @code.include?(num) ? add_num : @code.push(num)
   end
 end
