@@ -14,12 +14,12 @@ class Game
               "There is only one remaining wall between you and the money. A 4 digit code. You have tried\n"\
               "to bypass it, but it is impossible. You will have to guess. From what you can see\n"\
               "in the code database for the wallet, it seems that the code has no repeats, and\n"\
-              "the program will tell you whether or not each digit in your guess is included in the code,\n"\
-              "and if it is, whether or not it is in the right spot (\'r\' means right spot and digit and \'d\' means"\
-              " only right digit). A small line of red text below\nthe area you enter the code in spells out a message "\
-              "- YOU HAVE 3 TRIES LEFT - \nGood luck...\n"
+              "the program will tell you whether or not any digits in your guess are included in the code,\n"\
+              "and if they are, whether or not any are in the right spot (\'r\' means right spot and digit and \'d\' means"\
+              " only right digit). This hints will be scrambled. A small line of red text below\nthe area you enter the "\
+              "code in spells out a message - YOU HAVE 12 TRIES LEFT - \nGood luck...\n"
     type_out(message)
-    3.times { |time| guess(time) }
+    12.times { |time| guess(time) }
     @win ? win_message : lose_message
   end
 
@@ -28,7 +28,7 @@ class Game
     guess = gets.chomp.split('')
     if guess.length == 4 && guess == guess.uniq && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
       result(guess)
-      type_out("You have #{3 - (time + 1)} guesses remaining.\n") unless @win
+      type_out("You have #{12 - (time + 1)} guesses remaining.\n") unless @win
     else
       invalid
       guess(time)
@@ -45,11 +45,10 @@ class Game
         result << 'd'
         @win = false
       else
-        result << 'X'
         @win = false
       end
     end
-    puts result
+    puts result.split('').shuffle.join('')
   end
 
   def win_message
@@ -61,8 +60,8 @@ class Game
   def lose_message
     type_out("You failed to guess the code. The correct code was #{@code} (the wallet printed "\
               'a message telling you the correct code and that the code has been changed and the new '\
-              "code will appear on the owner of the wallet\'s device). The wallet has shut down "\
-              "and alerted government authorities of your ip address, which you thought it couldn\'t access."\
+              "code will appear on the owner of the wallet\'s device).\nThe wallet has shut down "\
+              "and alerted government authorities of your ip address, which you thought it couldn\'t access.\n"\
               'You might want to pack your things...')
   end
 
@@ -92,3 +91,4 @@ class Game
     @code.include?(num) ? add_num : @code.push(num)
   end
 end
+Game.new
