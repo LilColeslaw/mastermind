@@ -10,23 +10,19 @@ class Game
   private
 
   def play
-    message = "The year is 2054. You have hacked into a fiat wallet worth well over a whole bitcoin.\n"\
-              "There is only one remaining wall between you and the money. A 4 digit code. You have tried\n"\
-              "to bypass it, but it is impossible. You will have to guess. From what you can see\n"\
-              "in the code database for the wallet, it seems that the code has no repeats, and\n"\
+    message = "You will try to guess a 4-digit code. The code uses the numbers 1-6, and\n"\
               "the program will tell you whether or not any digits in your guess are included in the code,\n"\
-              "and if they are, whether or not any are in the right spot (\'r\' means right spot and digit and \'d\' means"\
-              " only right digit). This hints will be scrambled. A small line of red text below\nthe area you enter the "\
-              "code in spells out a message - YOU HAVE 12 TRIES LEFT - \nGood luck...\n"
+              "and if they are, whether or not any are in the right spot (\'r\' means right spot\nand digit and \'d\' means"\
+              " only right digit). This hints will be scrambled. You will have 12 tries. \nGood luck...\n"
     type_out(message)
-    12.times { |time| guess(time) }
+    12.times { |time| guess(time) unless @win }
     @win ? win_message : lose_message
   end
 
   def guess(time)
     type_out("What is your guess?\n")
     guess = gets.chomp.split('')
-    if guess.length == 4 && guess == guess.uniq && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
+    if guess.length == 4 && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
       result(guess)
       type_out("You have #{12 - (time + 1)} guesses remaining.\n") unless @win
     else
@@ -36,37 +32,56 @@ class Game
   end
 
   def result(guess)
-    result = ''
-    @win = true
+    @result = []
+    left_over = correct(guess)
+    if left_over[:code_left].length.zero? # did everything cancel out? then the player won!
+      @win = true
+    else # otherwise, take the left-overs and see if anything is partly correct
+      half_correct(left_over) # no need to use the result of this - it directly modifies @result
+    end
+    puts @result.shuffle.join('') # print the feedback, but shuffled!
+  end
+
+  # will return a hash with the left-overs in the code, and the left-overs in the guess
+  def correct(guess)
+    code_left_over = []
+    guess_left_over = []
     guess.each_with_index do |digit, index|
       if @code[index] == digit
-        result << 'r'
-      elsif @code.include?(digit)
-        result << 'd'
-        @win = false
-      else
-        @win = false
+        @result << 'r'
+      else # adds the parts that don't match together to the two arrays
+        code_left_over << @code[index]
+        guess_left_over << digit
       end
     end
-    puts result.split('').shuffle.join('')
+    { code_left: code_left_over, guess_left: guess_left_over }
+  end
+
+  def half_correct(left_over)
+    i = 0
+    while i < left_over[:guess_left].length # going to iterate i for every part of the guess
+      if left_over[:code_left].include? left_over[:guess_left][i]
+        @result << 'd'
+        left_over[:code_left].delete_at(left_over[:code_left].index(left_over[:guess_left][i]))
+        left_over[:guess_left].delete_at(i)
+        i -= 1 # because an element was just deleted everything is going to shift back 1 index
+      else
+        i += 1
+      end
+    end
   end
 
   def win_message
-    type_out("You guessed the correct code! You gain access to the account and send the money to your own\n"\
-             "fiat account. There, you send it to a swap and exchange it for 1/2 monero 1/2 bitcoin.\n"\
-             'You are rich! But more hacking will come. You are not done yet...')
+    type_out('You guessed the correct code! Nice job'\
+             "\n")
   end
 
   def lose_message
-    type_out("You failed to guess the code. The correct code was #{@code} (the wallet printed "\
-              'a message telling you the correct code and that the code has been changed and the new '\
-              "code will appear on the owner of the wallet\'s device).\nThe wallet has shut down "\
-              "and alerted government authorities of your ip address, which you thought it couldn\'t access.\n"\
-              'You might want to pack your things...')
+    type_out("You failed to guess the code. The correct code was #{@code}")
   end
 
   def invalid
-    puts "That's not a valid code. Remember, the code has no repeats, includes only the numbers"\
+    puts "That's not a valid code. Remember, the code includes only the numbers"\
          '1-6, and is 4 digits long...'
   end
 
