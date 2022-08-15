@@ -1,15 +1,31 @@
 # frozen-string-literal: false
 
+require './computer_solve'
 # class used to run the whole game - Game.new starts a new game
 class Game
   def initialize
     generate_code
-    play
+    which_mode
   end
 
   private
 
-  def play
+  def which_mode
+    type_out 'Would you like to be the code-solver or code-maker (enter 1 or 2 to choose)'
+    answer = gets.chomp
+    case answer
+    when '1' then solving
+    when '2' then ComputerSolve.new
+    else mode_error
+    end
+  end
+
+  def mode_error
+    type_out "That wasn't a 1 or a 2. Please enter only one of those options"
+    which_mode
+  end
+
+  def solving
     message = "You will try to guess a 4-digit code. The code uses the numbers 1-6, and\n"\
               "the program will tell you whether or not any digits in your guess are included in the code,\n"\
               "and if they are, whether or not any are in the right spot (\'r\' means right spot\nand digit and \'d\' means"\
