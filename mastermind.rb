@@ -99,7 +99,6 @@ class Game
   def generate_code
     @code = []
     4.times { @code.push((rand * 6 + 1).to_i.to_s) }
-    p @code
   end
 end
 Game.new
