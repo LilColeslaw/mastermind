@@ -98,12 +98,8 @@ class Game
 
   def generate_code
     @code = []
-    4.times { add_num }
-  end
-
-  def add_num
-    num = (rand * 6 + 1).to_i.to_s
-    @code.include?(num) ? add_num : @code.push(num)
+    4.times { @code.push((rand * 6 + 1).to_i.to_s) }
+    p @code
   end
 end
 Game.new
