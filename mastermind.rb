@@ -1,8 +1,12 @@
 # frozen-string-literal: false
 
 require './computer_solve'
+require './feedback'
+
 # class used to run the whole game - Game.new starts a new game
 class Game
+  include Feedback
+
   def initialize
     generate_code
     which_mode
@@ -11,7 +15,7 @@ class Game
   private
 
   def which_mode
-    type_out 'Would you like to be the code-solver or code-maker (enter 1 or 2 to choose)'
+    type_out "Would you like to be the code-solver or code-maker (enter 1 or 2 to choose)\n"
     answer = gets.chomp
     case answer
     when '1' then solving
@@ -39,7 +43,7 @@ class Game
     type_out("What is your guess?\n")
     guess = gets.chomp.split('')
     if guess.length == 4 && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
-      result(guess)
+      result(guess.map)
       type_out("You have #{12 - (time + 1)} guesses remaining.\n") unless @win
     else
       invalid
@@ -48,43 +52,9 @@ class Game
   end
 
   def result(guess)
-    @result = []
-    left_over = correct(guess)
-    if left_over[:code_left].length.zero? # did everything cancel out? then the player won!
-      @win = true
-    else # otherwise, take the left-overs and see if anything is partly correct
-      half_correct(left_over) # no need to use the result of this - it directly modifies @result
-    end
-    puts @result.shuffle.join('') # print the feedback, but shuffled!
-  end
-
-  # will return a hash with the left-overs in the code, and the left-overs in the guess
-  def correct(guess)
-    code_left_over = []
-    guess_left_over = []
-    guess.each_with_index do |digit, index|
-      if @code[index] == digit
-        @result << 'r'
-      else # adds the parts that don't match together to the two arrays
-        code_left_over << @code[index]
-        guess_left_over << digit
-      end
-    end
-    { code_left: code_left_over, guess_left: guess_left_over }
-  end
-
-  def half_correct(left_over)
-    i = 0
-    while i < left_over[:guess_left].length # going to iterate i for every part of the guess
-      if left_over[:code_left].include? left_over[:guess_left][i]
-        @result << 'd'
-        left_over[:code_left].delete_at(left_over[:code_left].index(left_over[:guess_left][i]))
-        left_over[:guess_left].delete_at(i)
-        i -= 1 # because an element was just deleted everything is going to shift back 1 index
-      else
-        i += 1
-      end
-    end
+    @result = feedback(guess, @code)
+    @win = true if @result[:correct] == 4 # the player won!
+    puts @result # print the feedback
   end
 
   def win_message
@@ -93,7 +63,7 @@ class Game
   end
 
   def lose_message
-    type_out("You failed to guess the code. The correct code was #{@code}")
+    type_out("You failed to guess the code. The correct code was #{@code}\n")
   end
 
   def invalid
