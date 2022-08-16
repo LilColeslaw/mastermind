@@ -15,7 +15,7 @@ class Game
   private
 
   def which_mode
-    type_out "Would you like to be the code-solver or code-maker (enter 1 or 2 to choose)\n"
+    puts 'Would you like to be the code-solver or code-maker (enter 1 or 2 to choose)?'
     answer = gets.chomp
     case answer
     when '1' then solving
@@ -25,26 +25,23 @@ class Game
   end
 
   def mode_error
-    type_out "That wasn't a 1 or a 2. Please enter only one of those options"
+    puts "That wasn't a 1 or a 2. Please enter only one of those options."
     which_mode
   end
 
   def solving
-    message = "You will try to guess a 4-digit code. The code uses the numbers 1-6, and\n"\
-              "the program will tell you whether or not any digits in your guess are included in the code,\n"\
-              "and if they are, whether or not any are in the right spot (\'r\' means right spot\nand digit and \'d\' means"\
-              " only right digit). This hints will be scrambled. You will have 12 tries. \nGood luck...\n"
-    type_out(message)
+    puts "You will try to guess a 4-digit code. The code uses the numbers 1-6, and\n"\
+              "the program will give you feedback on each guess. You will have 12 tries. \nGood luck..."
     12.times { |time| guess(time) unless @win }
     @win ? win_message : lose_message
   end
 
   def guess(time)
-    type_out("What is your guess?\n")
+    puts 'What is your guess?'
     guess = gets.chomp.split('')
     if guess.length == 4 && guess.all? { |element| %w[1 2 3 4 5 6].include?(element) }
       result(guess.map)
-      type_out("You have #{12 - (time + 1)} guesses remaining.\n") unless @win
+      puts "You have #{12 - (time + 1)} guesses remaining." unless @win
     else
       invalid
       guess(time)
@@ -54,32 +51,20 @@ class Game
   def result(guess)
     @result = feedback(guess, @code)
     @win = true if @result[:correct] == 4 # the player won!
-    puts @result # print the feedback
+    puts "Completely correct digits: #{@result[:correct]}\nRight digit wrong spot: #{@result[:half_correct]}" # print the feedback
   end
 
   def win_message
-    type_out('You guessed the correct code! Nice job'\
-             "\n")
+    puts 'You guessed the correct code! Nice job!'
   end
 
   def lose_message
-    type_out("You failed to guess the code. The correct code was #{@code}\n")
+    puts "You failed to guess the code. The correct code was #{@code}"
   end
 
   def invalid
     puts "That's not a valid code. Remember, the code includes only the numbers"\
          '1-6, and is 4 digits long...'
-  end
-
-  def type_out(message)
-    message.each_char do |char|
-      print char
-      case char
-      when '.' then sleep(0.35)
-      when ',' then sleep(0.2)
-      else sleep(0.1)
-      end
-    end
   end
 
   def generate_code

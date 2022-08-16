@@ -7,20 +7,20 @@ class ComputerSolve
   include Feedback
 
   def initialize
-    get_code
+    ask_code
+    list
     algorithm_guess
   end
 
   private
 
-  def get_code
+  def ask_code
     puts "Enter a code for the computer to guess. It must be 4\n"\
          'digits long and include only the numbers 1-6.'
     @code = gets.chomp.split('').map(&:to_i)
   end
 
   def algorithm_guess
-    list
     11.times do |time|
       if time.zero?
         solving_message(1, [1, 1, 2, 2])
@@ -29,10 +29,8 @@ class ComputerSolve
         solving_message(time + 1, @list[0])
         pare(@list[0])
       end
-      if @list.length.zero? # it's zero because we deleted the guess each time down in pare()
-        win_message
-        break
-      end
+      break win_message if @list.length.zero? # it's zero because we deleted the guess each time down in pare()
+
       lose_message if time == 11 # if we made it to the end of the 12th guess time, they lost
     end
   end
@@ -45,15 +43,7 @@ class ComputerSolve
 
   def list
     @list = []
-    for i in 1..6
-      for j in 1..6
-        for k in 1..6
-          for l in 1..6
-            @list.push([i, j, k, l])
-          end
-        end
-      end
-    end
+    (1..6).each { |i| (1..6).each { |j| (1..6).each { |k| (1..6).each { |l| @list.push([i, j, k, l]) } } } }
   end
 
   def solving_message(time, guess)
